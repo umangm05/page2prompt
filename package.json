@@ -1,0 +1,24 @@
+{
+  "name": "page2prompt",
+  "version": "0.1.0",
+  "description": "URL → clean markdown viewer. Visit page2prompt.com/<url> and get LLM-ready markdown with Copy + Download.",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'static site — no build step'",
+    "test": "echo 'run netlify dev to test locally'",
+    "deploy:netlify": "netlify deploy --prod"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@mozilla/readability": "^0.4.4",
+    "jsdom": "^24.0.0",
+    "node-fetch": "^2.7.0",
+    "turndown": "^7.2.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^16.0.0"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

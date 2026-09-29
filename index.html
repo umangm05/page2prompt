@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>page2prompt</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-hover: #79b8ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --radius: 8px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .logo {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--accent);
+    letter-spacing: -0.3px;
+    white-space: nowrap;
+  }
+  .logo span { color: var(--text); font-weight: 400; }
+
+  .input-group {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    min-width: 200px;
+  }
+  .input-group input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .input-group input:focus { border-color: var(--accent); }
+  .input-group input::placeholder { color: var(--muted); }
+
+  button.btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  button.btn:hover { background: #1c2333; border-color: #484f58; }
+  button.btn.primary { background: var(--accent); border-color: var(--accent); color: #0d1117; font-weight: 600; }
+  button.btn.primary:hover { background: var(--accent-hover); }
+  button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  main {
+    flex: 1;
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  .status-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .status-bar .url-chip {
+    background: #21262d;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 10px;
+    color: var(--muted);
+    font-size: 12px;
+    word-break: break-all;
+  }
+  .status-bar .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .status-msg { color: var(--muted); }
+  .status-msg.error { color: var(--red); }
+
+  .meta {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .meta strong { color: var(--text); font-weight: 600; }
+  .meta a { color: var(--accent); text-decoration: none; }
+  .meta a:hover { text-decoration: underline; }
+
+  .markdown-body { font-size: 15px; line-height: 1.75; }
+  .markdown-body h1, .markdown-body h2, .markdown-body h3,
+  .markdown-body h4, .markdown-body h5, .markdown-body h6 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .markdown-body h1 { font-size: 1.75em; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
+  .markdown-body h2 { font-size: 1.4em; border-bottom: 1px solid var(--border); padding-bottom: 0.25em; }
+  .markdown-body p { margin: 0.8em 0; }
+  .markdown-body a { color: var(--accent); }
+  .markdown-body pre {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 1em 0;
+  }
+  .markdown-body code { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 0.9em; }
+  .markdown-body code:not(pre code) { background: #21262d; padding: 2px 5px; border-radius: 4px; }
+  .markdown-body pre code { background: none; padding: 0; font-size: 13px; }
+  .markdown-body blockquote {
+    border-left: 3px solid var(--accent);
+    margin: 1em 0;
+    padding-left: 16px;
+    color: var(--muted);
+  }
+  .markdown-body img { max-width: 100%; border-radius: var(--radius); margin: 1em 0; }
+  .markdown-body ul, .markdown-body ol { margin: 0.5em 0 0.5em 1.5em; }
+  .markdown-body li { margin: 0.3em 0; }
+  .markdown-body hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
+  .markdown-body table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 14px; }
+  .markdown-body th, .markdown-body td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
+  .markdown-body th { background: var(--surface); font-weight: 600; }
+  .markdown-body tr:nth-child(even) { background: #0d1117; }
+  .markdown-body .empty-hint {
+    color: var(--muted);
+    font-style: italic;
+    padding: 2em 0;
+    text-align: center;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--surface);
+    border: 1px solid var(--green);
+    color: var(--green);
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 16px 24px;
+    color: var(--muted);
+    font-size: 12px;
+    text-align: center;
+    background: var(--surface);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    main { padding: 20px 16px 60px; }
+    .topbar { padding: 10px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">page2prompt <span>— clean markdown from any URL</span></div>
+  <div class="input-group">
+    <input id="urlInput" type="url" placeholder="https://example.com/article" autocomplete="off" spellcheck="false" />
+    <button class="btn primary" id="goBtn">Fetch</button>
+  </div>
+  <div class="toolbar">
+    <button class="btn" id="copyBtn" disabled>Copy</button>
+    <button class="btn" id="downloadBtn" disabled>Download .md</button>
+  </div>
+</div>
+
+<main>
+  <div id="statusBar" class="status-bar" style="display:none;"></div>
+  <div id="content"></div>
+</main>
+
+<footer>
+  Built by <a href="https://github.com/umangm05/page2prompt" target="_blank" rel="noopener">page2prompt</a> ·
+  Mozilla Readability + Turndown
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+  const urlInput = document.getElementById("urlInput");
+  const goBtn = document.getElementById("goBtn");
+  const copyBtn = document.getElementById("copyBtn");
+  const downloadBtn = document.getElementById("downloadBtn");
+  const statusBar = document.getElementById("statusBar");
+  const content = document.getElementById("content");
+  const toast = document.getElementById("toast");
+
+  let lastMarkdown = "";
+
+  function showToast(msg, duration = 2000) {
+    toast.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => toast.classList.remove("show"), duration);
+  }
+
+  function showStatus(msg, kind = "info", chipUrl = null) {
+    statusBar.style.display = "flex";
+    statusBar.innerHTML = "";
+    if (kind === "loading") {
+      statusBar.innerHTML =
+        '<div class="spinner"></div><div class="status-msg">Fetching and extracting content…</div>';
+      return;
+    }
+    if (kind === "error") {
+      statusBar.innerHTML =
+        `<div class="status-msg error">⚠ ${escapeHtml(msg)}</div>`;
+      return;
+    }
+    const chipHtml = chipUrl
+      ? `<span class="url-chip">${escapeHtml(chipUrl)}</span>`
+      : "";
+    statusBar.innerHTML =
+      `${chipHtml}<div class="status-msg" style="color:var(--green);">✓ Done</div>`;
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function getTargetUrl() {
+    if (urlInput.value.trim()) return urlInput.value.trim();
+    const path = window.location.pathname.replace(/^\/+/, "");
+    if (path && path !== "index.html") return path;
+    return null;
+  }
+
+  async function fetchContent(url) {
+    showStatus(null, "loading");
+    try {
+      const resp = await fetch(`/.netlify/functions/convert?url=${encodeURIComponent(url)}`);
+      if (!resp.ok) {
+        const body = await resp.json().catch(() => ({}));
+        throw new Error(body.error || `Server error (${resp.status})`);
+      }
+      const data = await resp.json();
+      return data;
+    } catch (err) {
+      if (err.message?.includes("Failed to fetch") || err.type === "Failed to fetch") {
+        showStatus(
+          "Network error — the Netlify function may not be deployed yet. Run `netlify dev` locally, or check the deploy status.",
+          "error"
+        );
+      } else {
+        showStatus(err.message || "Request failed", "error");
+      }
+      content.innerHTML = "";
+      copyBtn.disabled = true;
+      downloadBtn.disabled = true;
+      throw err;
+    }
+  }
+
+  function renderMarkdown(md) {
+    content.innerHTML = `<div class="markdown-body"></div>`;
+    const mdEl = content.querySelector(".markdown-body");
+    if (!md || md.trim() === "") {
+      mdEl.innerHTML = `<div class="empty-hint">No content extracted.</div>`;
+      return;
+    }
+    const { fromMarkdown } = window.markdownit({
+      html: true,
+      linkify: true,
+      typographer: true,
+    });
+    mdEl.innerHTML = fromMarkdown(md);
+  }
+
+  async function run(url) {
+    copyBtn.disabled = true;
+    downloadBtn.disabled = true;
+    lastMarkdown = "";
+    try {
+      const data = await fetchContent(url);
+      lastMarkdown = data.markdown || "";
+      showStatus(null, "done", data.sourceUrl);
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.innerHTML = `<strong>${escapeHtml(data.title)}</strong> ·
+        fetched from <a href="${escapeHtml(data.sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(data.sourceUrl)}</a>`;
+      content.insertBefore(meta, content.firstChild);
+      renderMarkdown(data.markdown);
+      copyBtn.disabled = false;
+      downloadBtn.disabled = false;
+    } catch (e) {
+      // status already set by fetchContent
+    }
+  }
+
+  goBtn.addEventListener("click", () => {
+    const url = urlInput.value.trim();
+    if (!url) { urlInput.focus(); return; }
+    window.history.replaceState(null, "", "/" + url);
+    run(url);
+  });
+
+  urlInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") goBtn.click();
+  });
+
+  copyBtn.addEventListener("click", async () => {
+    if (!lastMarkdown) return;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(lastMarkdown);
+        showToast("Copied markdown to clipboard");
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = lastMarkdown;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        showToast("Copied markdown to clipboard");
+      }
+    } catch (e) {
+      showToast("Copy failed — select and copy manually", 3000);
+    }
+  });
+
+  downloadBtn.addEventListener("click", () => {
+    if (!lastMarkdown) return;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([lastMarkdown], { type: "text/markdown" }));
+    a.download = "page2prompt.md";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+    showToast("Downloaded page2prompt.md");
+  });
+
+  // Boot from path
+  (function boot() {
+    const pathUrl = getTargetUrl();
+    if (pathUrl) {
+      urlInput.value = pathUrl;
+      run(pathUrl);
+    } else {
+      content.innerHTML =
+        `<div class="markdown-body" style="text-align:center;padding:4em 0;color:var(--muted);">
+        <p style="font-size:18px;color:var(--text);font-weight:600;">page2prompt</p>
+        <p style="margin-top:0.5em;">Paste any URL above, or visit<br/>
+        <code style="background:var(--surface);padding:2px 6px;border-radius:4px;">page2prompt.com/https://example.com/article</code></p>
+        <p style="margin-top:1.5em;font-size:13px;">Strips navigation, ads, and boilerplate — returns only what an LLM needs.</p>
+        </div>`;
+      statusBar.style.display = "none";
+    }
+  })();
+})();
+</script>
+
+<!-- markdown-it for client-side rendering — loaded async, non-blocking -->
+<script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js" async defer></script>
+</body>
+</html>
